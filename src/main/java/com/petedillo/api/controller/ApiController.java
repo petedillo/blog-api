@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1")
 public class ApiController {
 
-    @GetMapping("posts")
+    @GetMapping("health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("OK");
     }
+
+
 
 }
