@@ -1,14 +1,18 @@
 package com.petedillo.api.controller;
 
-
 import com.petedillo.api.model.BlogPost;
+import com.petedillo.api.model.SearchResponseDTO;
 import com.petedillo.api.service.BlogPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -16,15 +20,25 @@ import java.util.List;
 public class ApiController {
 
     private final BlogPostService blogPostService;
+    private final DataSource dataSource;
 
     @Autowired
-    public ApiController(BlogPostService blogPostService) {
+    public ApiController(BlogPostService blogPostService, DataSource dataSource) {
         this.blogPostService = blogPostService;
+        this.dataSource = dataSource;
     }
 
     @GetMapping("health")
     public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Health Check");
+        try (Connection connection = dataSource.getConnection()) {
+            if (connection.isValid(1)) { // Check if connection is valid within 1 second
+                return ResponseEntity.ok("Connected to DB");
+            } else {
+                return ResponseEntity.status(500).body("Not connected to DB: Invalid connection");
+            }
+        } catch (SQLException e) {
+            return ResponseEntity.status(500).body("Not connected to DB: " + e.getMessage());
+        }
     }
 
     @GetMapping("posts")
@@ -33,8 +47,10 @@ public class ApiController {
     }
 
     @GetMapping("search")
-    public ResponseEntity<String> searchPosts() {
-        return ResponseEntity.ok("Search");
+    public ResponseEntity<SearchResponseDTO> searchPosts(@RequestParam String searchTerm) {
+        List<BlogPost> results = blogPostService.searchPosts(searchTerm);
+        SearchResponseDTO response = new SearchResponseDTO(searchTerm, results);
+        return ResponseEntity.ok(response);
     }
 
 }

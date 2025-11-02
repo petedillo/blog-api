@@ -20,4 +20,8 @@ public class BlogPostService {
     public List<BlogPost> getAllPosts() {
         return blogPostRepository.findAll();
     }
+
+    public List<BlogPost> searchPosts(String searchTerm) {
+        return blogPostRepository.searchByTitleOrSlug(searchTerm);
+    }
 }
