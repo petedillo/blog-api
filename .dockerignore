@@ -1,0 +1,11 @@
+target/
+src/
+.mvn/
+.git/
+.gitignore
+pom.xml
+*.md
+.env
+.idea/
+.vscode/
+*.iml
