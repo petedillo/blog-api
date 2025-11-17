@@ -11,7 +11,7 @@ on:
       - develop
 
 env:
-  NEXUS_REGISTRY: docker.registry.toastedbytes.com
+  NEXUS_REGISTRY: docker.toastedbytes.com
   NEXUS_MAVEN_RELEASES: https://registry.toastedbytes.com/repository/maven-releases/
   NEXUS_MAVEN_SNAPSHOTS: https://registry.toastedbytes.com/repository/maven-snapshots/
 
