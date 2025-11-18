@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1")
+@RequestMapping("/api/v1")
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {
         org.springframework.web.bind.annotation.RequestMethod.GET,
         org.springframework.web.bind.annotation.RequestMethod.POST,
