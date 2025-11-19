@@ -7,9 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
+
+    Optional<BlogPost> findBySlug(String slug);
 
     @Query("SELECT p FROM BlogPost p WHERE p.title ILIKE %:searchTerm% OR p.slug ILIKE %:searchTerm%")
     List<BlogPost> searchByTitleOrSlug(@Param("searchTerm") String searchTerm);
