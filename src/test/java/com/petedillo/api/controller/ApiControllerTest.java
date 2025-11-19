@@ -50,6 +50,7 @@ class ApiControllerTest {
         testPost.setExcerpt("Test excerpt");
         testPost.setStatus("published");
         testPost.setPublishedAt(LocalDateTime.now());
+        testPost.setTags(Arrays.asList("java", "spring-boot"));
 
         // Mock AppConfig
         when(appConfig.getEnvironment()).thenReturn("dev");
@@ -115,7 +116,10 @@ class ApiControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].title").value("Test Post"))
-            .andExpect(jsonPath("$[0].slug").value("test-post"));
+            .andExpect(jsonPath("$[0].slug").value("test-post"))
+            .andExpect(jsonPath("$[0].tags", hasSize(2)))
+            .andExpect(jsonPath("$[0].tags[0]").value("java"))
+            .andExpect(jsonPath("$[0].tags[1]").value("spring-boot"));
 
         verify(blogPostService).getAllPosts();
     }
@@ -143,7 +147,9 @@ class ApiControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.slug").value("test-post"))
             .andExpect(jsonPath("$.title").value("Test Post"))
-            .andExpect(jsonPath("$.content").value("Test content"));
+            .andExpect(jsonPath("$.content").value("Test content"))
+            .andExpect(jsonPath("$.tags", hasSize(2)))
+            .andExpect(jsonPath("$.tags[0]").value("java"));
 
         verify(blogPostService).getPostBySlug("test-post");
     }
