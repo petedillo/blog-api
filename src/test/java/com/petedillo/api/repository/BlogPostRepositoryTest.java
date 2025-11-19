@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -137,5 +138,38 @@ class BlogPostRepositoryTest {
         // Assert
         Optional<BlogPost> result = blogPostRepository.findById(id);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testSave_WithTags_PersistsTagsToDatabase() {
+        // Arrange
+        testPost.setTags(Arrays.asList("java", "spring-boot", "testing"));
+
+        // Act
+        BlogPost saved = blogPostRepository.save(testPost);
+        BlogPost retrieved = blogPostRepository.findById(saved.getId()).orElseThrow();
+
+        // Assert
+        assertNotNull(retrieved.getTags());
+        assertEquals(3, retrieved.getTags().size());
+        assertTrue(retrieved.getTags().contains("java"));
+        assertTrue(retrieved.getTags().contains("spring-boot"));
+        assertTrue(retrieved.getTags().contains("testing"));
+    }
+
+    @Test
+    void testDelete_WithTags_CascadesDeleteToTags() {
+        // Arrange
+        testPost.setTags(Arrays.asList("java", "spring-boot"));
+        BlogPost saved = blogPostRepository.save(testPost);
+        Long id = saved.getId();
+
+        // Act
+        blogPostRepository.deleteById(id);
+
+        // Assert
+        Optional<BlogPost> result = blogPostRepository.findById(id);
+        assertTrue(result.isEmpty());
+        // Tags should be cascade deleted automatically
     }
 }
