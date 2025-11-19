@@ -40,6 +40,7 @@ class BlogPostServiceTest {
         testPost.setExcerpt("Test excerpt");
         testPost.setStatus("published");
         testPost.setPublishedAt(LocalDateTime.now());
+        testPost.setTags(Arrays.asList("java", "spring-boot"));
     }
 
     @Test
@@ -85,6 +86,8 @@ class BlogPostServiceTest {
         assertNotNull(result);
         assertEquals("Test Post", result.getTitle());
         assertEquals("test-post", result.getSlug());
+        assertNotNull(result.getTags());
+        assertEquals(2, result.getTags().size());
         verify(blogPostRepository).findBySlug("test-post");
     }
 
