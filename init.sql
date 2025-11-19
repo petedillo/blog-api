@@ -3,15 +3,18 @@
 -- Description: Create database and user for development
 -- ============================================================================
 
--- Create database (run as postgres superuser)
-CREATE DATABASE petedillo_blog
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF-8'
-    LC_CTYPE = 'en_US.UTF-8'
-    TEMPLATE = template0;
+-- Database is created by docker-compose environment variable
+-- Skip database creation to avoid duplicate errors
 
--- Create application user
-CREATE USER petedillo WITH PASSWORD 'dev_password';
+-- Create application user (idempotent)
+DO
+$$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'petedillo') THEN
+    CREATE USER petedillo WITH PASSWORD 'dev_password';
+  END IF;
+END
+$$;
 
 -- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE petedillo_blog TO petedillo;

@@ -1,10 +1,15 @@
 package com.petedillo.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -36,5 +41,30 @@ public class BlogPost {
 
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "blogPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<BlogTag> blogTags = new ArrayList<>();
+
+    // Convenience method to get tag names as List<String> for JSON serialization
+    @JsonProperty("tags")
+    public List<String> getTags() {
+        return blogTags.stream()
+                .map(BlogTag::getTagName)
+                .collect(Collectors.toList());
+    }
+
+    // Convenience method to set tags from List<String>
+    public void setTags(List<String> tags) {
+        this.blogTags.clear();
+        if (tags != null) {
+            for (String tag : tags) {
+                BlogTag blogTag = new BlogTag();
+                blogTag.setTagName(tag.toLowerCase());
+                blogTag.setBlogPost(this);
+                this.blogTags.add(blogTag);
+            }
+        }
+    }
 
 }
