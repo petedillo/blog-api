@@ -16,7 +16,45 @@ env:
   NEXUS_MAVEN_SNAPSHOTS: https://registry.toastedbytes.com/repository/maven-snapshots/
 
 jobs:
-  build-and-deploy:
+  # PR builds: Test and validate only, no deployment
+  build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Run tests
+        run: mvn test
+
+      - name: Build Docker image (validation only)
+        run: |
+          cp target/*.jar .
+          docker build -t blog-api:pr-${{ github.event.pull_request.number }} .
+        continue-on-error: true
+
+      - name: Summary
+        run: |
+          echo "### Build Validation :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR #${{ github.event.pull_request.number }}**: Build and tests successful" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Branch**: ${{ github.base_ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Ready for review (no deployment on PR)" >> $GITHUB_STEP_SUMMARY
+
+  # Push to main/develop: Build, test, and deploy to registry
+  deploy:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -57,6 +95,9 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
+
+      - name: Run tests
+        run: mvn test
 
       - name: Deploy to Nexus Maven Repository
         run: mvn deploy -DskipTests
@@ -102,3 +143,4 @@ jobs:
           echo "- **Maven Artifact**: Deployed to Nexus" >> $GITHUB_STEP_SUMMARY
           echo "- **Docker Image**: \`blog-api:${{ steps.docker-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit SHA**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry**: ${{ env.NEXUS_REGISTRY }}" >> $GITHUB_STEP_SUMMARY
