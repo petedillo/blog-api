@@ -46,6 +46,10 @@ public class BlogPost {
     @OneToMany(mappedBy = "blogPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<BlogTag> blogTags = new ArrayList<>();
 
+    @OneToMany(mappedBy = "blogPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
+    private List<BlogMedia> media = new ArrayList<>();
+
     // Convenience method to get tag names as List<String> for JSON serialization
     @JsonProperty("tags")
     public List<String> getTags() {
@@ -65,6 +69,24 @@ public class BlogPost {
                 this.blogTags.add(blogTag);
             }
         }
+    }
+
+    // Get media items as DTOs for JSON serialization
+    @JsonProperty("media")
+    public List<MediaDTO> getMediaDTOs() {
+        return media.stream()
+                .map(MediaDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // Get cover image (first media with displayOrder = 0)
+    @JsonProperty("coverImage")
+    public CoverImageDTO getCoverImage() {
+        return media.stream()
+                .filter(m -> m.getDisplayOrder() != null && m.getDisplayOrder() == 0)
+                .findFirst()
+                .map(CoverImageDTO::fromEntity)
+                .orElse(null);
     }
 
 }
